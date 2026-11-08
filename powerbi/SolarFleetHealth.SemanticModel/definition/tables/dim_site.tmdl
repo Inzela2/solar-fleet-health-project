@@ -1,0 +1,66 @@
+/// One row per rooftop solar installation, with metadata and lifetime alert totals.
+table dim_site
+	lineageTag: 58ef3935-3a29-5812-bbab-f65b82e0925d
+
+	column site_id
+		dataType: int64
+		formatString: 0
+		isKey
+		lineageTag: 6c84d4cb-e93e-512a-99f1-7ab7904c8377
+		summarizeBy: none
+		sourceColumn: site_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column capacity_kw
+		dataType: double
+		formatString: 0.00
+		lineageTag: f8777e97-7d2d-5056-ba1a-270945a5d657
+		summarizeBy: none
+		sourceColumn: capacity_kw
+
+		annotation SummarizationSetBy = Automatic
+
+	column postcode
+		dataType: int64
+		formatString: 0
+		lineageTag: 7a4c98e4-a8d3-5357-9d71-d3cdf2fdaac0
+		summarizeBy: none
+		sourceColumn: postcode
+
+		annotation SummarizationSetBy = Automatic
+
+	column capacity_band
+		dataType: string
+		lineageTag: 5fcfb5e5-d41e-5f60-ae6e-f9e92ae8d8a5
+		summarizeBy: none
+		sourceColumn: capacity_band
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_alerts
+		dataType: int64
+		formatString: #,0
+		lineageTag: 3a6a9a8d-f904-5448-8461-71123ac5edcc
+		summarizeBy: sum
+		sourceColumn: total_alerts
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_alert_day
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 12a7410b-bc9e-5283-a0f8-fa387b15a88f
+		summarizeBy: none
+		sourceColumn: last_alert_day
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_site = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "dim_site"]}[Data]
+				in
+				    Data

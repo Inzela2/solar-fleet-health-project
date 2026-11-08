@@ -1,0 +1,14 @@
+/// Dynamic row-level security: a regional manager sees only the postcodes mapped to their
+/// login in reporting.site_access. Facts follow automatically through the relationships.
+role 'Postcode Manager'
+	modelPermission: read
+
+	tablePermission dim_site = ```
+			dim_site[postcode]
+			    IN CALCULATETABLE (
+			        VALUES ( site_access[postcode] ),
+			        site_access[user_email] = USERPRINCIPALNAME ()
+			    )
+			```
+
+	tablePermission site_access = site_access[user_email] = USERPRINCIPALNAME ()

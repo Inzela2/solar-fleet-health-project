@@ -1,0 +1,117 @@
+/// One row per site per day: generation, consumption, yield and health flags.
+table fact_daily
+	lineageTag: 397a96e9-90d4-5130-a674-a790e8d0d10a
+
+	column site_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 54d19194-319f-5e92-bc89-55354d2ad68d
+		summarizeBy: none
+		sourceColumn: site_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		isHidden
+		lineageTag: 973cc023-deb4-5b4c-8c80-c090aa7d8528
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column gen_kwh
+		dataType: double
+		formatString: #,0.0
+		lineageTag: c22eb918-bdeb-5792-859e-34218d080972
+		summarizeBy: sum
+		sourceColumn: gen_kwh
+
+		annotation SummarizationSetBy = Automatic
+
+	column cons_kwh
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 14b5d2a8-8676-5ac6-81e5-302191811603
+		summarizeBy: sum
+		sourceColumn: cons_kwh
+
+		annotation SummarizationSetBy = Automatic
+
+	column gen_intervals
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a4a139c7-a423-59a8-81bb-dc3ae57e1a06
+		summarizeBy: sum
+		sourceColumn: gen_intervals
+
+		annotation SummarizationSetBy = Automatic
+
+	column yield_kwh_per_kw
+		dataType: double
+		formatString: 0.00
+		lineageTag: c996ac1c-a61d-564c-ac48-fd68d8cea0af
+		summarizeBy: average
+		sourceColumn: yield_kwh_per_kw
+
+		annotation SummarizationSetBy = Automatic
+
+	column fleet_yield
+		dataType: double
+		formatString: 0.00
+		lineageTag: a4167eed-ea57-54ec-bcb2-3b38230e35b9
+		summarizeBy: average
+		sourceColumn: fleet_yield
+
+		annotation SummarizationSetBy = Automatic
+
+	column perf_ratio
+		dataType: double
+		formatString: 0.00
+		lineageTag: f7ccb8e6-8cb8-546e-a9a2-bb13da4e25f7
+		summarizeBy: average
+		sourceColumn: perf_ratio
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_complete_day
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 47733970-b4f5-5997-86d8-f997f0eb3b8c
+		summarizeBy: sum
+		sourceColumn: is_complete_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_generating_day
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 72ae85e2-02bc-5cd9-bdee-0d8ed87e4b65
+		summarizeBy: sum
+		sourceColumn: is_generating_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_outage_day
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 085a714c-337d-5654-9ab3-4695c47a9321
+		summarizeBy: sum
+		sourceColumn: is_outage_day
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_daily = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "fact_daily"]}[Data]
+				in
+				    Data

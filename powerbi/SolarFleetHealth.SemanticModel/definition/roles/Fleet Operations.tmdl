@@ -1,0 +1,4 @@
+/// Fleet operations team: sees every site.
+role 'Fleet Operations'
+	modelPermission: read
+

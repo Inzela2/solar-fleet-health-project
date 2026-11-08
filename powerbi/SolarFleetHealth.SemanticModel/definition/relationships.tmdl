@@ -1,0 +1,15 @@
+relationship 0c4afe7e-55f6-5cbb-b82a-bbd4261033c8
+	fromColumn: fact_daily.site_id
+	toColumn: dim_site.site_id
+
+relationship c4b0993a-7925-598f-9e85-27f5413c60dc
+	fromColumn: fact_daily.date
+	toColumn: dim_date.date
+
+relationship cc0fc4fd-666a-5151-a551-e310a5714cf8
+	fromColumn: fact_alerts.site_id
+	toColumn: dim_site.site_id
+
+relationship a2a02773-d5b2-5c9b-b7db-b53bb2be31a0
+	fromColumn: fact_alerts.date
+	toColumn: dim_date.date

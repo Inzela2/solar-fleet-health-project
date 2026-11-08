@@ -1,0 +1,11 @@
+/// PostgreSQL host and port. Change here (or in Transform data > Edit parameters) to point at another server.
+expression PgServer = "localhost:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 5c4d7f74-2ad5-5401-acc1-850023fb6579
+
+	annotation PBI_ResultType = Text
+
+/// Database the pipeline writes to.
+expression PgDatabase = "solar" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: e9e73fe3-e01d-5c4c-a938-3468eb2cd49b
+
+	annotation PBI_ResultType = Text

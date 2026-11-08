@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.1.0/schema.json",
+  "pageOrder": [
+    "fleet_overview",
+    "site_drilldown",
+    "pipeline_health",
+    "metric_explorer"
+  ],
+  "activePageName": "fleet_overview"
+}

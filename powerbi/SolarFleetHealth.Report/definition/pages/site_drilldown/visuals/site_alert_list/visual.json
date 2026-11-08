@@ -1,0 +1,120 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "site_alert_list",
+  "position": {
+    "x": 640,
+    "y": 404,
+    "z": 0,
+    "width": 616,
+    "height": 292,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_alerts"
+                    }
+                  },
+                  "Property": "date"
+                }
+              },
+              "queryRef": "fact_alerts.date",
+              "nativeQueryRef": "date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_alerts"
+                    }
+                  },
+                  "Property": "severity"
+                }
+              },
+              "queryRef": "fact_alerts.severity",
+              "nativeQueryRef": "severity"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_alerts"
+                    }
+                  },
+                  "Property": "alert_type"
+                }
+              },
+              "queryRef": "fact_alerts.alert_type",
+              "nativeQueryRef": "alert_type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_alerts"
+                    }
+                  },
+                  "Property": "detail"
+                }
+              },
+              "queryRef": "fact_alerts.detail",
+              "nativeQueryRef": "detail"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fact_alerts"
+                  }
+                },
+                "Property": "date"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Alert history'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

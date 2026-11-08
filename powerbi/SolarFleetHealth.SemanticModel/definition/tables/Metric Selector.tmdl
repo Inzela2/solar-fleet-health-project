@@ -1,0 +1,54 @@
+/// Field parameter: lets the viewer choose which KPI the trend chart shows.
+table 'Metric Selector'
+	lineageTag: 97036613-b71d-5305-a4fc-25e293c860d1
+
+	column 'Metric Selector'
+		dataType: string
+		lineageTag: f2eea876-9316-5e5f-946e-a6fd450251a7
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Metric Selector Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Metric Selector Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Selector Fields'
+		dataType: string
+		isHidden
+		lineageTag: fdd1d876-bb39-5d75-a426-2a37723a4583
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Metric Selector Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Selector Order'
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 97ce118f-0460-5588-a4d4-2cebab6f943a
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Metric Selector' = calculated
+		mode: import
+		source =
+				{
+				    ( "Generation (kWh)", NAMEOF ( '_Measures'[Total Generation kWh] ), 0 ),
+				    ( "Fleet uptime", NAMEOF ( '_Measures'[Fleet Uptime %] ), 1 ),
+				    ( "Alerts per 1,000 site-days", NAMEOF ( '_Measures'[Alerts per 1,000 Site-Days] ), 2 ),
+				    ( "Median performance ratio", NAMEOF ( '_Measures'[Median Performance Ratio] ), 3 ),
+				    ( "Data completeness", NAMEOF ( '_Measures'[Data Completeness %] ), 4 )
+				}
+
+	annotation PBI_Id = d913f1f33d5f552490d9c89cc471861f

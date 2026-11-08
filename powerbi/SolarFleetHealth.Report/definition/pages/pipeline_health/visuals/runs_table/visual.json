@@ -1,0 +1,176 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "runs_table",
+  "position": {
+    "x": 640,
+    "y": 208,
+    "z": 0,
+    "width": 616,
+    "height": 488,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "run_id"
+                }
+              },
+              "queryRef": "pipeline_runs.run_id",
+              "nativeQueryRef": "run_id"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "started_at"
+                }
+              },
+              "queryRef": "pipeline_runs.started_at",
+              "nativeQueryRef": "started_at"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "date_from"
+                }
+              },
+              "queryRef": "pipeline_runs.date_from",
+              "nativeQueryRef": "date_from"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "date_to"
+                }
+              },
+              "queryRef": "pipeline_runs.date_to",
+              "nativeQueryRef": "date_to"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "rows_in"
+                }
+              },
+              "queryRef": "pipeline_runs.rows_in",
+              "nativeQueryRef": "rows_in"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "rows_quarantined"
+                }
+              },
+              "queryRef": "pipeline_runs.rows_quarantined",
+              "nativeQueryRef": "rows_quarantined"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "status"
+                }
+              },
+              "queryRef": "pipeline_runs.status",
+              "nativeQueryRef": "status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "duration_seconds"
+                }
+              },
+              "queryRef": "pipeline_runs.duration_seconds",
+              "nativeQueryRef": "duration_seconds"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "pipeline_runs"
+                  }
+                },
+                "Property": "run_id"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Ingest runs'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

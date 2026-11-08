@@ -1,0 +1,103 @@
+/// Gap-free calendar covering the metrics range. Marked as the model's date table.
+table dim_date
+	lineageTag: 39b2fbab-e65d-5181-8628-954b41106370
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		isKey
+		lineageTag: 36172459-277a-5f95-b6ab-c65c7ec3fefe
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 079a87dd-e47e-58de-acf3-815d651eede8
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_no
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: eb20e129-cb3a-5852-babb-45d17943c22f
+		summarizeBy: none
+		sourceColumn: month_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_label
+		dataType: string
+		sortByColumn: month_start
+		lineageTag: 623436c1-ea50-5122-8b99-44623538dc60
+		summarizeBy: none
+		sourceColumn: month_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_start
+		dataType: dateTime
+		formatString: mmm yyyy
+		isHidden
+		lineageTag: b07d2d2b-46d9-5a9c-b9b9-025bc8cf2ab0
+		summarizeBy: none
+		sourceColumn: month_start
+
+		annotation SummarizationSetBy = Automatic
+
+	column weekday_no
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a2b1f912-ae95-5d85-90a3-04e1f228434b
+		summarizeBy: none
+		sourceColumn: weekday_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column weekday
+		dataType: string
+		sortByColumn: weekday_no
+		lineageTag: f65da226-aebf-534c-ac51-f6b4ff74f885
+		summarizeBy: none
+		sourceColumn: weekday
+
+		annotation SummarizationSetBy = Automatic
+
+	column season
+		dataType: string
+		lineageTag: 1f60cae0-e20d-5aaf-a804-c9743c17c1fa
+		summarizeBy: none
+		sourceColumn: season
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy Calendar
+		lineageTag: 3c1d720d-ad35-5f81-a4fb-400d0be9a652
+
+		level year
+			lineageTag: 68062be7-fc72-5f3b-9799-a6db8f5bec69
+			column: year
+
+		level month_label
+			lineageTag: 6bc464ef-0e22-53fa-9f97-025034e529c6
+			column: month_label
+
+		level date
+			lineageTag: 90b50f14-21a6-5798-b41d-a497138fed7f
+			column: date
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "dim_date"]}[Data]
+				in
+				    Data

@@ -1,0 +1,53 @@
+{
+  "name": "Solar Fleet",
+  "dataColors": [
+    "#F2A93B",
+    "#2E6F9E",
+    "#3C9D5D",
+    "#D64545",
+    "#7B5EA7",
+    "#8C8C8C",
+    "#E8A33D",
+    "#4BA3C7"
+  ],
+  "good": "#3C9D5D",
+  "neutral": "#E8A33D",
+  "bad": "#D64545",
+  "background": "#FFFFFF",
+  "foreground": "#1F2933",
+  "tableAccent": "#F2A93B",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#1F2933"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 28,
+      "color": "#1F2933"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E4E7EB"
+              }
+            },
+            "radius": 6
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ]
+      }
+    }
+  }
+}

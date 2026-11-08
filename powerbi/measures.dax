@@ -1,0 +1,193 @@
+// All DAX in the Solar Fleet Health model, in one readable file.
+// Source of truth: SolarFleetHealth.SemanticModel/definition/tables/*.tmdl
+
+
+// ===== Base =====
+
+// Solar energy generated in the current filter context.  [format: #,0]
+Total Generation kWh =
+    SUM ( fact_daily[gen_kwh] )
+
+// Household consumption in the current filter context.  [format: #,0]
+Total Consumption kWh =
+    SUM ( fact_daily[cons_kwh] )
+
+// Sites with at least one day of data in context.  [format: #,0]
+Sites Reporting =
+    DISTINCTCOUNT ( fact_daily[site_id] )
+
+// Sites x days from the dimensions, so a site that sent no data still counts against uptime.  [format: #,0]
+Expected Site Days =
+    COUNTROWS (
+        CROSSJOIN ( VALUES ( dim_site[site_id] ), VALUES ( dim_date[date] ) )
+    )
+
+
+// ===== Uptime =====
+
+// Full days of zero output while the fleet generated normally.  [format: #,0]
+Outage Days =
+    SUM ( fact_daily[is_outage_day] )
+
+// Site-days where the fleet reported but this site did not.  [format: #,0]
+Missing Data Days =
+    CALCULATE ( [Total Alerts], fact_alerts[alert_type] = "missing_data" )
+
+// 1 minus (outage days + missing-data days) / expected site days. Cloudy days are not downtime.  [format: 0.0%]
+Fleet Uptime % =
+    VAR expected = [Expected Site Days]
+    VAR down = [Outage Days] + [Missing Data Days]
+    RETURN IF ( expected > 0, 1 - DIVIDE ( down, expected ) )
+
+// Half-hour readings received / readings expected (48 per site-day).  [format: 0.0%]
+Data Completeness % =
+    DIVIDE ( SUM ( fact_daily[gen_intervals] ), [Expected Site Days] * 48 )
+
+
+// ===== Alerts =====
+
+// Alerts of any type.  [format: #,0]
+Total Alerts =
+    COUNTROWS ( fact_alerts )
+
+// No-generation alerts.  [format: #,0]
+Critical Alerts =
+    CALCULATE ( [Total Alerts], KEEPFILTERS ( fact_alerts[severity] = "critical" ) )
+
+// Site 3-day performance below 70% of its own 28-day baseline.  [format: #,0]
+Underperformance Alerts =
+    CALCULATE ( [Total Alerts], KEEPFILTERS ( fact_alerts[alert_type] = "underperforming" ) )
+
+// Alert volume normalised by fleet size and period length. Same unit as the detector's false-alarm rate.  [format: 0.0]
+Alerts per 1,000 Site-Days =
+    DIVIDE ( [Total Alerts], [Expected Site Days] ) * 1000
+
+// Distinct sites with at least one critical alert in context.  [format: #,0]
+Sites with Critical Alerts =
+    CALCULATE ( DISTINCTCOUNT ( fact_alerts[site_id] ), KEEPFILTERS ( fact_alerts[severity] = "critical" ) )
+
+// Days from the site's latest alert to the end of the selected period.  [format: #,0]
+Days Since Last Alert =
+    VAR lastAlert = MAX ( fact_alerts[date] )
+    VAR periodEnd = MAX ( dim_date[date] )
+    RETURN IF ( NOT ISBLANK ( lastAlert ), DATEDIFF ( lastAlert, periodEnd, DAY ) )
+
+
+// ===== Performance =====
+
+// Median of site yield / fleet median yield. Median so a few dead sites do not drag the figure down.  [format: 0.00]
+Median Performance Ratio =
+    MEDIAN ( fact_daily[perf_ratio] )
+
+// Average daily yield per kW of installed panels.  [format: 0.00]
+Avg Yield kWh per kW =
+    AVERAGE ( fact_daily[yield_kwh_per_kw] )
+
+// Generation as a share of consumption.  [format: 0.0%]
+Self-Supply % =
+    DIVIDE ( [Total Generation kWh], [Total Consumption kWh] )
+
+// Rank of the site by critical alerts (1 = most). Blank outside a single-site context.  [format: 0]
+Site Rank by Alerts =
+    IF (
+        HASONEVALUE ( dim_site[site_id] ),
+        RANKX ( ALLSELECTED ( dim_site[site_id] ), [Critical Alerts],, DESC, DENSE )
+    )
+
+
+// ===== Time intelligence =====
+
+// Generation over the 28 days ending on the last visible date. Matches the detector's baseline window.  [format: #,0]
+Generation Rolling 28d =
+    CALCULATE (
+        [Total Generation kWh],
+        DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -28, DAY )
+    )
+
+// Generation in the same period one month earlier.  [format: #,0]
+Generation Prior Month =
+    CALCULATE ( [Total Generation kWh], DATEADD ( dim_date[date], -1, MONTH ) )
+
+// Month-on-month change in generation.  [format: +0.0%;-0.0%;0.0%]
+Generation MoM % =
+    VAR cur = [Total Generation kWh]
+    VAR prev = [Generation Prior Month]
+    RETURN DIVIDE ( cur - prev, prev )
+
+// Calendar year-to-date generation.  [format: #,0]
+Generation YTD =
+    TOTALYTD ( [Total Generation kWh], dim_date[date] )
+
+
+// ===== Pipeline =====
+
+// Status of the most recent ingest run.
+Last Run Status =
+    VAR lastRun = MAX ( pipeline_runs[run_id] )
+    RETURN
+        CALCULATE ( SELECTEDVALUE ( pipeline_runs[status] ), pipeline_runs[run_id] = lastRun )
+
+// When the most recent ingest run finished.  [format: dd mmm yyyy hh:nn]
+Last Run Finished =
+    MAX ( pipeline_runs[finished_at] )
+
+// Rows rejected by validation, kept with a reason.  [format: #,0]
+Rows Quarantined =
+    SUM ( pipeline_runs[rows_quarantined] )
+
+// Rows quarantined / rows received.  [format: 0.00%]
+Quarantine Rate % =
+    DIVIDE ( [Rows Quarantined], SUM ( pipeline_runs[rows_in] ) )
+
+
+// ===== Formatting =====
+
+// Hex colour for conditional formatting: red = critical alert, amber = underperforming, green = healthy.
+Site Status Colour =
+    SWITCH (
+        TRUE (),
+        [Critical Alerts] > 0, "#D64545",
+        [Underperformance Alerts] > 0, "#E8A33D",
+        "#3C9D5D"
+    )
+
+// Fleet uptime minus the 98% service target.  [format: +0.0%;-0.0%;0.0%]
+Uptime Target Gap =
+    [Fleet Uptime %] - 0.98
+
+
+// ===== Calculation group: Time Comparison (applies to any measure) =====
+
+Current =
+    SELECTEDMEASURE ()
+
+Prior Month =
+    CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+
+MoM Change =
+    VAR cur = SELECTEDMEASURE ()
+    VAR prev = CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+    RETURN IF ( NOT ISBLANK ( cur ) && NOT ISBLANK ( prev ), cur - prev )
+
+MoM % =
+    VAR cur = SELECTEDMEASURE ()
+    VAR prev = CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+    RETURN DIVIDE ( cur - prev, prev )
+
+YTD =
+    CALCULATE ( SELECTEDMEASURE (), DATESYTD ( dim_date[date] ) )
+
+Rolling 28d =
+    CALCULATE (
+        SELECTEDMEASURE (),
+        DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -28, DAY )
+    )
+
+
+// ===== Row-level security: Postcode Manager role, filter on dim_site =====
+
+dim_site[postcode]
+    IN CALCULATETABLE (
+        VALUES ( site_access[postcode] ),
+        site_access[user_email] = USERPRINCIPALNAME ()
+    )

@@ -1,0 +1,110 @@
+/// One row per ingest batch, for the pipeline health page.
+table pipeline_runs
+	lineageTag: fa3d398e-1953-582f-affb-834bae72420b
+
+	column run_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 46755fab-f63a-583c-8f27-a52ad7d507cf
+		summarizeBy: none
+		sourceColumn: run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_at
+		dataType: dateTime
+		formatString: dd mmm yyyy hh:nn
+		lineageTag: 8161532c-12b6-5d13-8343-bcc29b121e7a
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column finished_at
+		dataType: dateTime
+		formatString: dd mmm yyyy hh:nn
+		lineageTag: 6a56ff4c-47f3-5678-b591-f40df7b42b3d
+		summarizeBy: none
+		sourceColumn: finished_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_from
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 50b77dfd-06b8-5ccb-9a40-c74c63d3a893
+		summarizeBy: none
+		sourceColumn: date_from
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_to
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 982fd00a-082b-524f-85a6-0b19a554ec44
+		summarizeBy: none
+		sourceColumn: date_to
+
+		annotation SummarizationSetBy = Automatic
+
+	column rows_in
+		dataType: int64
+		formatString: #,0
+		lineageTag: ae6fddd6-bc64-5a20-826d-1e5355423e3d
+		summarizeBy: sum
+		sourceColumn: rows_in
+
+		annotation SummarizationSetBy = Automatic
+
+	column rows_loaded
+		dataType: int64
+		formatString: #,0
+		lineageTag: 185bb04c-9b06-52b1-b799-af2ccd4a03d8
+		summarizeBy: sum
+		sourceColumn: rows_loaded
+
+		annotation SummarizationSetBy = Automatic
+
+	column rows_quarantined
+		dataType: int64
+		formatString: #,0
+		lineageTag: 1caff1a8-43ca-5120-8557-e563355734cf
+		summarizeBy: sum
+		sourceColumn: rows_quarantined
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 37b9dbf4-4851-5280-9411-407f1237a1ed
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column duration_seconds
+		dataType: int64
+		formatString: #,0
+		lineageTag: 924d414f-9fb9-55cf-818c-1761fed705cc
+		summarizeBy: sum
+		sourceColumn: duration_seconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarantine_rate
+		dataType: double
+		formatString: 0.00%
+		lineageTag: 1a8b2a93-e0ee-539d-873f-376c584ced6d
+		summarizeBy: none
+		sourceColumn: quarantine_rate
+
+		annotation SummarizationSetBy = Automatic
+
+	partition pipeline_runs = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "pipeline_runs"]}[Data]
+				in
+				    Data

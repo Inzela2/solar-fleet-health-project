@@ -1,0 +1,30 @@
+/// Security mapping: which postcodes each login may see (used by the Postcode Manager role).
+table site_access
+	lineageTag: 534ced47-b85c-5c39-9b43-82a5b6c072b8
+	isHidden
+
+	column user_email
+		dataType: string
+		lineageTag: 1e8e19ca-3cad-5f96-b75a-e94a2674d7d6
+		summarizeBy: none
+		sourceColumn: user_email
+
+		annotation SummarizationSetBy = Automatic
+
+	column postcode
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a32cfed-39d9-51b9-8581-108837cffa15
+		summarizeBy: none
+		sourceColumn: postcode
+
+		annotation SummarizationSetBy = Automatic
+
+	partition site_access = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "site_access"]}[Data]
+				in
+				    Data

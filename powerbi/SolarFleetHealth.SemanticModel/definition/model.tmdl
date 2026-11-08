@@ -1,0 +1,28 @@
+model Model
+	culture: en-AU
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-AU
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["PgServer","PgDatabase","dim_site","dim_date","fact_daily","fact_alerts","site_access","pipeline_runs"]
+
+annotation PBI_ProTooling = ["DevMode","TMDL-Extension"]
+
+ref table dim_site
+ref table dim_date
+ref table fact_daily
+ref table fact_alerts
+ref table site_access
+ref table pipeline_runs
+ref table _Measures
+ref table 'Time Comparison'
+ref table 'Metric Selector'
+
+ref role 'Fleet Operations'
+ref role 'Postcode Manager'
+

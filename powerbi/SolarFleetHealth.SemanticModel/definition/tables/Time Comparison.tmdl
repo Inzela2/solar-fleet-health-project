@@ -1,0 +1,60 @@
+/// Applies the same time logic to any measure, instead of writing Prior Month / MoM / YTD
+/// variants of every measure by hand.
+table 'Time Comparison'
+	lineageTag: fe0d12b8-92c9-5303-ae97-57a9810e8d3a
+
+	calculationGroup
+		precedence: 1
+
+		calculationItem Current = SELECTEDMEASURE ()
+			ordinal: 0
+
+		calculationItem 'Prior Month' = CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+			ordinal: 1
+
+		calculationItem 'MoM Change' = ```
+				VAR cur = SELECTEDMEASURE ()
+				VAR prev = CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+				RETURN IF ( NOT ISBLANK ( cur ) && NOT ISBLANK ( prev ), cur - prev )
+				```
+			ordinal: 2
+
+		calculationItem 'MoM %' = ```
+				VAR cur = SELECTEDMEASURE ()
+				VAR prev = CALCULATE ( SELECTEDMEASURE (), DATEADD ( dim_date[date], -1, MONTH ) )
+				RETURN DIVIDE ( cur - prev, prev )
+				```
+			ordinal: 3
+			formatStringDefinition = "+0.0%;-0.0%;0.0%"
+
+		calculationItem YTD = CALCULATE ( SELECTEDMEASURE (), DATESYTD ( dim_date[date] ) )
+			ordinal: 4
+
+		calculationItem 'Rolling 28d' = ```
+				CALCULATE (
+				    SELECTEDMEASURE (),
+				    DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -28, DAY )
+				)
+				```
+			ordinal: 5
+
+	column 'Time Comparison'
+		dataType: string
+		lineageTag: 20b0e5bc-16e3-557e-825d-b5f333efdfde
+		summarizeBy: none
+		sourceColumn: Name
+		sortByColumn: Ordinal
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ordinal
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: b37b317d-996b-5a0a-9c9c-c73f5e1d7278
+		summarizeBy: sum
+		sourceColumn: Ordinal
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Time Comparison' = calculationGroup

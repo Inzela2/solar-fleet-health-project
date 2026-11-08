@@ -1,0 +1,218 @@
+/// Home table for every explicit measure, grouped into display folders.
+table _Measures
+	lineageTag: 24b3fa3c-2ae5-530b-b14b-0815d042e6ca
+
+	/// Solar energy generated in the current filter context.
+	measure 'Total Generation kWh' = SUM ( fact_daily[gen_kwh] )
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 9c998bfd-cacb-5a3a-95a2-284b13ce142d
+
+	/// Household consumption in the current filter context.
+	measure 'Total Consumption kWh' = SUM ( fact_daily[cons_kwh] )
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 23639d79-cbd6-59f0-81bc-4844640abbf5
+
+	/// Sites with at least one day of data in context.
+	measure 'Sites Reporting' = DISTINCTCOUNT ( fact_daily[site_id] )
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 3333ed9e-85e1-559f-ad4c-2a229b20395f
+
+	/// Sites x days from the dimensions, so a site that sent no data still counts against uptime.
+	measure 'Expected Site Days' = ```
+			COUNTROWS (
+			    CROSSJOIN ( VALUES ( dim_site[site_id] ), VALUES ( dim_date[date] ) )
+			)
+			```
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 0db0f6a8-f9c7-5d83-9b07-2fa6dd69d99c
+
+	/// Full days of zero output while the fleet generated normally.
+	measure 'Outage Days' = SUM ( fact_daily[is_outage_day] )
+		formatString: #,0
+		displayFolder: Uptime
+		lineageTag: e622aa9a-d4da-5926-8cf4-5e9dae227eb2
+
+	/// Site-days where the fleet reported but this site did not.
+	measure 'Missing Data Days' = CALCULATE ( [Total Alerts], fact_alerts[alert_type] = "missing_data" )
+		formatString: #,0
+		displayFolder: Uptime
+		lineageTag: 811a44f1-e981-502f-aff3-4f19d45d5baa
+
+	/// 1 minus (outage days + missing-data days) / expected site days. Cloudy days are not downtime.
+	measure 'Fleet Uptime %' = ```
+			VAR expected = [Expected Site Days]
+			VAR down = [Outage Days] + [Missing Data Days]
+			RETURN IF ( expected > 0, 1 - DIVIDE ( down, expected ) )
+			```
+		formatString: 0.0%
+		displayFolder: Uptime
+		lineageTag: 7b81ba31-9b0f-5997-9ef8-3c03bdce9410
+
+	/// Half-hour readings received / readings expected (48 per site-day).
+	measure 'Data Completeness %' = DIVIDE ( SUM ( fact_daily[gen_intervals] ), [Expected Site Days] * 48 )
+		formatString: 0.0%
+		displayFolder: Uptime
+		lineageTag: 1e752e73-3759-5896-8738-43723dbb12d2
+
+	/// Alerts of any type.
+	measure 'Total Alerts' = COUNTROWS ( fact_alerts )
+		formatString: #,0
+		displayFolder: Alerts
+		lineageTag: b8311ace-f34f-52d2-8e33-805cff47e560
+
+	/// No-generation alerts.
+	measure 'Critical Alerts' = CALCULATE ( [Total Alerts], KEEPFILTERS ( fact_alerts[severity] = "critical" ) )
+		formatString: #,0
+		displayFolder: Alerts
+		lineageTag: eaf3eb6d-db40-5962-8574-818605cacd07
+
+	/// Site 3-day performance below 70% of its own 28-day baseline.
+	measure 'Underperformance Alerts' = CALCULATE ( [Total Alerts], KEEPFILTERS ( fact_alerts[alert_type] = "underperforming" ) )
+		formatString: #,0
+		displayFolder: Alerts
+		lineageTag: bd388d2e-7394-5738-914a-67b8af9bc2e2
+
+	/// Alert volume normalised by fleet size and period length. Same unit as the detector's false-alarm rate.
+	measure 'Alerts per 1,000 Site-Days' = DIVIDE ( [Total Alerts], [Expected Site Days] ) * 1000
+		formatString: 0.0
+		displayFolder: Alerts
+		lineageTag: 16993606-4568-5ba6-b05d-f6179a4091ff
+
+	/// Distinct sites with at least one critical alert in context.
+	measure 'Sites with Critical Alerts' = CALCULATE ( DISTINCTCOUNT ( fact_alerts[site_id] ), KEEPFILTERS ( fact_alerts[severity] = "critical" ) )
+		formatString: #,0
+		displayFolder: Alerts
+		lineageTag: 7882fe9f-3a1f-57a8-923e-7dc912d40028
+
+	/// Days from the site's latest alert to the end of the selected period.
+	measure 'Days Since Last Alert' = ```
+			VAR lastAlert = MAX ( fact_alerts[date] )
+			VAR periodEnd = MAX ( dim_date[date] )
+			RETURN IF ( NOT ISBLANK ( lastAlert ), DATEDIFF ( lastAlert, periodEnd, DAY ) )
+			```
+		formatString: #,0
+		displayFolder: Alerts
+		lineageTag: 62e2d6df-a780-5f7d-816e-c11175405cfa
+
+	/// Median of site yield / fleet median yield. Median so a few dead sites do not drag the figure down.
+	measure 'Median Performance Ratio' = MEDIAN ( fact_daily[perf_ratio] )
+		formatString: 0.00
+		displayFolder: Performance
+		lineageTag: 44530120-4c2d-56fe-8467-45391419adbc
+
+	/// Average daily yield per kW of installed panels.
+	measure 'Avg Yield kWh per kW' = AVERAGE ( fact_daily[yield_kwh_per_kw] )
+		formatString: 0.00
+		displayFolder: Performance
+		lineageTag: 45462a25-dbd9-5b76-a6c7-bc8668de9e15
+
+	/// Generation as a share of consumption.
+	measure 'Self-Supply %' = DIVIDE ( [Total Generation kWh], [Total Consumption kWh] )
+		formatString: 0.0%
+		displayFolder: Performance
+		lineageTag: b3aa762d-83c6-5ed2-b0c9-ef2e9454a1c9
+
+	/// Rank of the site by critical alerts (1 = most). Blank outside a single-site context.
+	measure 'Site Rank by Alerts' = ```
+			IF (
+			    HASONEVALUE ( dim_site[site_id] ),
+			    RANKX ( ALLSELECTED ( dim_site[site_id] ), [Critical Alerts],, DESC, DENSE )
+			)
+			```
+		formatString: 0
+		displayFolder: Performance
+		lineageTag: 2d833300-f0d8-5dc7-81e3-cf9331dc0e4b
+
+	/// Generation over the 28 days ending on the last visible date. Matches the detector's baseline window.
+	measure 'Generation Rolling 28d' = ```
+			CALCULATE (
+			    [Total Generation kWh],
+			    DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -28, DAY )
+			)
+			```
+		formatString: #,0
+		displayFolder: Time intelligence
+		lineageTag: a47febe5-5ef7-5fac-b8bc-5e4cb55f52e0
+
+	/// Generation in the same period one month earlier.
+	measure 'Generation Prior Month' = CALCULATE ( [Total Generation kWh], DATEADD ( dim_date[date], -1, MONTH ) )
+		formatString: #,0
+		displayFolder: Time intelligence
+		lineageTag: f35da8c5-f0bd-53d8-91b2-dbc7a3e77ceb
+
+	/// Month-on-month change in generation.
+	measure 'Generation MoM %' = ```
+			VAR cur = [Total Generation kWh]
+			VAR prev = [Generation Prior Month]
+			RETURN DIVIDE ( cur - prev, prev )
+			```
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Time intelligence
+		lineageTag: 36902193-cbf6-586e-b9b5-a6f680d92c18
+
+	/// Calendar year-to-date generation.
+	measure 'Generation YTD' = TOTALYTD ( [Total Generation kWh], dim_date[date] )
+		formatString: #,0
+		displayFolder: Time intelligence
+		lineageTag: 522c894d-6932-598c-baf4-5f2e4d478871
+
+	/// Status of the most recent ingest run.
+	measure 'Last Run Status' = ```
+			VAR lastRun = MAX ( pipeline_runs[run_id] )
+			RETURN
+			    CALCULATE ( SELECTEDVALUE ( pipeline_runs[status] ), pipeline_runs[run_id] = lastRun )
+			```
+		displayFolder: Pipeline
+		lineageTag: b899343a-ffb9-560f-8e2a-bfdad5d0db78
+
+	/// When the most recent ingest run finished.
+	measure 'Last Run Finished' = MAX ( pipeline_runs[finished_at] )
+		formatString: dd mmm yyyy hh:nn
+		displayFolder: Pipeline
+		lineageTag: 5d48d56d-31d2-5183-9b43-31a75e4e0851
+
+	/// Rows rejected by validation, kept with a reason.
+	measure 'Rows Quarantined' = SUM ( pipeline_runs[rows_quarantined] )
+		formatString: #,0
+		displayFolder: Pipeline
+		lineageTag: e46d3581-b09b-5705-800e-c78e9aaf9f39
+
+	/// Rows quarantined / rows received.
+	measure 'Quarantine Rate %' = DIVIDE ( [Rows Quarantined], SUM ( pipeline_runs[rows_in] ) )
+		formatString: 0.00%
+		displayFolder: Pipeline
+		lineageTag: 5058bba0-dd4e-550b-9c2c-fd1287bde498
+
+	/// Hex colour for conditional formatting: red = critical alert, amber = underperforming, green = healthy.
+	measure 'Site Status Colour' = ```
+			SWITCH (
+			    TRUE (),
+			    [Critical Alerts] > 0, "#D64545",
+			    [Underperformance Alerts] > 0, "#E8A33D",
+			    "#3C9D5D"
+			)
+			```
+		displayFolder: Formatting
+		lineageTag: c8728e67-53cf-5d0d-bc97-f271f5cc2db3
+
+	/// Fleet uptime minus the 98% service target.
+	measure 'Uptime Target Gap' = [Fleet Uptime %] - 0.98
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Formatting
+		lineageTag: 55ef0422-e7d2-5e4c-a9f8-bf990567e100
+
+	column Placeholder
+		dataType: string
+		isHidden
+		lineageTag: 62d53d27-0f02-58b1-8f03-f5d4be84cc99
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW ( "Placeholder", BLANK () )

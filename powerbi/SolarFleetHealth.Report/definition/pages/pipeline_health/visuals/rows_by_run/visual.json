@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "rows_by_run",
+  "position": {
+    "x": 24,
+    "y": 208,
+    "z": 0,
+    "width": 600,
+    "height": 488,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "run_id"
+                }
+              },
+              "queryRef": "pipeline_runs.run_id",
+              "nativeQueryRef": "run_id"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "rows_loaded"
+                }
+              },
+              "queryRef": "pipeline_runs.rows_loaded",
+              "nativeQueryRef": "rows_loaded"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_runs"
+                    }
+                  },
+                  "Property": "rows_quarantined"
+                }
+              },
+              "queryRef": "pipeline_runs.rows_quarantined",
+              "nativeQueryRef": "rows_quarantined"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Rows loaded and quarantined per run'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

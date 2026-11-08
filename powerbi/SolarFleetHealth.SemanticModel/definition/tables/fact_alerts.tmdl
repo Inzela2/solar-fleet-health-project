@@ -1,0 +1,77 @@
+/// One row per alert raised by the fault detector.
+table fact_alerts
+	lineageTag: b6019ed5-751c-5d83-ba26-750ac33dd5f0
+
+	column site_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 19c47f95-c5bf-5a4b-91b7-185e08e83d48
+		summarizeBy: none
+		sourceColumn: site_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		isHidden
+		lineageTag: 72a666b0-3370-5602-b18f-9103282c4e1e
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column alert_type
+		dataType: string
+		lineageTag: d4908658-da35-51ec-9b1b-dfc3d80130fe
+		summarizeBy: none
+		sourceColumn: alert_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column severity
+		dataType: string
+		sortByColumn: severity_order
+		lineageTag: 3997b4a1-7fcf-5e2e-bf01-360da8bf27e3
+		summarizeBy: none
+		sourceColumn: severity
+
+		annotation SummarizationSetBy = Automatic
+
+	column severity_order
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: 71d03a18-a0a7-59ea-95ab-ad5cef918567
+		summarizeBy: none
+		sourceColumn: severity_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column detail
+		dataType: string
+		lineageTag: 86fc9b85-a265-5eb4-bd69-6b6af4765da4
+		summarizeBy: none
+		sourceColumn: detail
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_at
+		dataType: dateTime
+		formatString: dd mmm yyyy hh:nn
+		isHidden
+		lineageTag: ac53a4db-d845-5b10-bb44-ef09a0943181
+		summarizeBy: none
+		sourceColumn: created_at
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_alerts = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database ( PgServer, PgDatabase ),
+				    Data = Source{[Schema = "reporting", Item = "fact_alerts"]}[Data]
+				in
+				    Data
